@@ -1,60 +1,66 @@
 # BMW Sales Intelligence & Pricing Analytics (2024–2025)
 
 ## 1. Project Overview
-This project is an end-to-end business intelligence and data analytics solution designed to analyze global BMW sales transactions from 2024 to 2025. It integrates data cleaning and exploratory data analysis (EDA) in Python, structural database design (PostgreSQL Star Schema), and advanced SQL analysis to deliver actionable business insights. The project concludes with a planned 4-page interactive Power BI dashboard designed to empower executive decisions.
+
+An end-to-end business intelligence project analyzing 10,000 BMW sales transactions (2024–2025). The workflow covers data cleaning and EDA in Python, a PostgreSQL star schema, SQL-based analysis, and a 4-page Power BI dashboard built around specific business questions rather than generic charts.
+
+The dashboard covers four lenses: **executive performance, product performance, pricing & discount strategy, and customer & channel performance** — each page answers a distinct question, and together they form one narrative: revenue is growing, but that growth is increasingly discount-supported and coming from a shrinking EV mix, so the customer layer checks whether loyalty is strong enough underneath to sustain it.
 
 ---
 
 ## 2. Business Problem & Objective
-**Core Business Problem:**
-BMW executive leadership needs to monitor sales performance, evaluate regional profitability, assess the health of the pricing and discounting strategy, and optimize logistics. Specifically, the business is trying to answer:
-* *Which models, segments, and sales channels drive profitable growth?*
-* *Is the current discounting strategy driving incremental sales volume or eroding margins?*
-* *How are fulfillment timelines affecting customer satisfaction (CSAT)?*
-* *Are EV models gaining revenue share compared to conventional models?*
 
-**Business Objective:**
-To build a comprehensive data platform and Business Intelligence dashboard that helps BMW executives monitor sales performance, customer loyalty, pricing elasticity, and regional profitability, enabling data-driven inventory allocation and discount optimization.
+BMW leadership needs a fast, reliable view of sales performance across four areas:
+
+- Which models, body styles, and fuel types drive revenue and volume?
+- Where is revenue concentrated, and how is it trending?
+- Is discounting concentrated in specific models/regions, and is it buying customer satisfaction?
+- How do delivery time, loyalty, and sales channel relate to customer experience?
+
+**Objective:** turn raw transaction data into a validated data model, SQL-based analysis, and an executive-facing Power BI dashboard that supports decisions on pricing, product mix, and customer retention.
 
 ---
 
 ## 3. Tech Stack
-* **Data Engineering & Cleaning:** Python 3, Pandas, NumPy, SQLAlchemy
-* **Database & ETL:** PostgreSQL 16 (Star Schema modeling)
-* **Data Analysis & Viz:** Python (Jupyter Notebooks, Matplotlib, Seaborn)
-* **Business Intelligence & Reporting:** SQL (Advanced CTEs, Window Functions), Power BI (DAX, Star Schema Data Modeling)
-* **Version Control:** Git & GitHub
+
+- **Data cleaning:** Python 3, Pandas, NumPy
+- **Database:** PostgreSQL (star schema)
+- **EDA:** Jupyter Notebooks, Matplotlib/Seaborn
+- **BI & analysis:** SQL (CTEs, window functions), Power BI (DAX, star schema modeling)
+- **Version control:** Git & GitHub
 
 ---
 
 ## 4. Dataset Overview
-The dataset contains **10,000 sales transactions** from 2024 to 2025 across 7 regions and 14 BMW models, featuring 30 raw variables:
-* **Dimensions:** Time (Sale Date, Year, Quarter, Month), Product (Model, Variant, Segment, Body Style, Fuel Type, Transmission), Geography (Region, Country), Customer Profile (Customer Type, Financing Type, Sales Channel, Loyalty, Warranty).
-* **Metrics:** MSRP, Discount Percent, Discount Amount, Final Sale Price, Options Cost, Delivery Days, Customer Satisfaction Score (CSAT).
+
+10,000 sales transactions across 7 regions and 14+ BMW models.
+
+- **Dimensions:** sale date/year/quarter/month, model/variant/body style/fuel type/transmission, region/country, customer type/financing type/sales channel
+- **Metrics:** MSRP, discount %, discount amount, final sale price, options cost, delivery days, customer satisfaction score
 
 ---
 
-## 5. Data Cleaning & Structural Validation
-The raw dataset was cleaned and structured in Python using the following business-critical rules:
-1. **Structural Validation:** Verified that there are 0 duplicate transaction IDs and that all dates are internally consistent with their respective year, month, and quarter fields.
-2. **Business Rule Validation:** Confirmed that pricing columns (`final_sale_price_usd`, `msrp_usd`) are positive (> 0) and that `discount_percent` is restricted to the logical range of 0–100%.
-3. **Missing Value Management:**
-   * `loan_term_months`: Left as `NULL` for Cash/Subscription customers to prevent creating artificial loans.
-   * `customer_satisfaction_score`: Left as `NULL` for non-respondents to prevent survey response bias.
+## 5. Data Cleaning & Validation
+
+- Verified zero duplicate transaction IDs and internal date consistency (year/month/quarter alignment)
+- Validated pricing columns (`final_sale_price_usd`, `msrp_usd`) are positive; `discount_percent` within a logical 0–100% range
+- **Missing values handled by business meaning, not blanket imputation:**
+  - `customer_satisfaction_score` left `NULL` for non-respondents (~24% of rows) rather than imputed, to avoid manufacturing fake sentiment
+  - `loan_term_months` left `NULL` where financing wasn't applicable
 
 ---
 
 ## 6. Feature Engineering
-Four strategic features were engineered in Python before database ingestion:
-* `profit_proxy` = `final_sale_price_usd` - `msrp_usd` + `discount_amount_usd` (Directional margin indicator per sale).
-* `discount_bucket` = Classified into `Low (0-5%)`, `Medium (5-10%)`, `High (10-20%)`, and `Very High (20%+)` to evaluate price elasticity.
-* `year_month` = Formatted period key for clean chronological trends.
-* `delivery_category` = Classified into `Fast (<7 days)`, `Normal (7-14 days)`, and `Delayed (>14 days)` to isolate supply chain performance.
+
+- `discount_bucket` — sales classified into discount depth tiers (Low / Medium / High) to analyze pricing pressure
+- `delivery_category` — Fast / Normal / Delayed, to isolate fulfillment performance (data showed a strong skew toward "Delayed," which shaped how this metric was visualized)
+- `year_month` — clean chronological key for trend charts
+
+**Note:** an initial `profit_proxy` feature was engineered but later dropped from the final dashboard — the project didn't have true manufacturing cost data, and a directional-but-unverifiable margin figure was judged more likely to mislead than inform. See Section 11.
 
 ---
 
 ## 7. Data Warehousing & Star Schema
-The cleaned data was normalized into a **Star Schema** to optimize query performance and enable clean, fast relationship modeling in Power BI.
 
 ```mermaid
 erDiagram
@@ -113,54 +119,96 @@ erDiagram
 
 ---
 
-## 8. Advanced SQL Analysis
-A suite of 22 analytical queries was built to extract insights from the PostgreSQL star schema. They leverage:
-* **Window Functions:** Slicing regional contribution percentages, performing running totals, and ranking models.
-* **CTEs & Window LAG:** Computing Month-over-Month (MoM) and Year-over-Year (YoY) growth rates.
-* **Casting & Boolean Averaging:** Calculating repeat purchase rates.
+## 8. SQL Analysis
 
-The 22 queries are grouped into five business themes:
+Analytical queries against the PostgreSQL star schema, grouped into five business themes: Revenue, Pricing & Discount, Regional Performance, Product Performance, and Customer & Sales Channel. Techniques used include window functions (regional contribution %, model ranking), CTEs with `LAG()` for MoM/YoY growth, and boolean casting for repeat-purchase rate calculations.
 
-* Revenue Analysis
-* Pricing & Discount Analysis
-* Regional Performance Analysis
-* Product Performance Analysis
-* Customer & Sales Channel Analysis
+*(Fill in your actual query count and file names here — keep this section only as detailed as what's actually in your `/sql` folder.)*
 
 ---
 
-## 9. Key Business Insights
-1. **Sales Stability:** Monthly revenue remains highly stable (averaging **0.92% MoM growth**), indicating healthy demand consistency.
-2. **Regional Growth:** **North America** and **Europe** drive **56.4%** of global revenue. However, the **Asia Pacific** region is the fastest grower, registering **8.60% YoY growth** between 2024 and 2025.
-3. **Volume vs. Value Drivers:** The **3 Series** is the highest volume vehicle (**1,233 units**), whereas the **X5** is the top revenue generator, contributing **$67.20M** to the business.
-4. **Discounting Elasticity:** Discounting has almost zero linear correlation with customer satisfaction ($r = 0.004$). Slicing by `discount_bucket` reveals that deeper discounts do not lead to proportional sales volume increases, indicating potential margin leakage in high-discount regions (like North America at 6.11%).
-5. **EV Transition Headwinds:** Revenue share of the EV lineup (i4, i5, i7, iX) contracted slightly from **23.68%** in 2024 to **22.67%** in 2025.
-6. **Logistics & CSAT:** Fast delivery times (<7 days) yield a higher average CSAT (**4.23**) compared to delayed deliveries (**4.19**).
+## 9. Power BI Dashboard
+
+Four pages, each built around one business question, sharing a consistent visual system (BMW blue accent, white cards, consistent KPI formatting, and a written key-takeaway on every page).
+
+### 9.1 Executive Overview
+**Question:** How is BMW performing overall, and where is revenue coming from?
+**KPIs:** Total Revenue · Total Units · Avg Final Price · Avg Discount % · Avg Satisfaction · Revenue YoY %
+**Visuals:** Monthly Revenue · Revenue by Region · Monthly Units Sold · Revenue by Quarter
+
+![Executive Overview](images/Dashboard/Executive_Overview.png)
+
+### 9.2 Product Performance
+**Question:** Which models and product categories drive revenue and volume?
+**KPIs:** Top Model by Revenue · Top Model by Units · EV Revenue Share % · Top Variant Revenue Value · Top Variant by Revenue
+**Visuals:** Top 10 Models by Revenue · Model Performance (Revenue vs Units scatter) · Revenue by Body Style · Revenue by Fuel Type
+
+![Product Performance](images/Dashboard/Product_performance.png)
+
+### 9.3 Pricing & Discount Strategy
+**Question:** Where is discounting concentrated, and does it correlate with satisfaction?
+**KPIs:** Avg Discount % · Avg Discount Amount · Highest Discount Model · Highest Discount Region · High Discount Share %
+**Visuals:** Discount Trend Over Time · Discount vs Satisfaction (scatter) · Avg Discount by Region · Avg Discount by Model
+
+![Pricing & Discount Strategy](images/Dashboard/Pricing_and_Discount_strategy.png)
+
+### 9.4 Customer & Channel Performance
+**Question:** How do loyalty, satisfaction, delivery time, and channel relate to performance?
+**KPIs:** Avg Satisfaction · Repeat Customer Rate · Avg Delivery Time · Top Sales Channel · Top Customer Type
+**Visuals:** Repeat Customer Rate Over Time · Repeat Customer Rate by Region · Revenue by Customer Type · Revenue by Sales Channel · Satisfaction vs Delivery Time (scatter)
+
+![Customer & Channel Performance](images/Dashboard/Customer_and_Channel_performance.png)
 
 ---
 
-## 10. Power BI Dashboard Plan
-The dashboard design is documented in [powerbi_dashboard_plan.md](powerbi_dashboard_plan.md). It defines the four report pages, shared slicers, DAX measures, drillthrough behavior, and visual layout recommendations needed to turn the analysis into an executive-facing BI report.
+## 10. Key Business Insights
+
+**Revenue & Regional**
+- Total revenue reached **$626.6M**, up **5.2% YoY**
+- North America and Europe together contribute **over 57%** of total revenue
+- February is consistently the weakest month before recovering through Q2
+
+**Product**
+- **X5** leads by revenue; **3 Series** leads by units — revenue and volume leaders are different models
+- **EV revenue share is 12.07%** and declining YoY, despite strong performance from conventional top sellers
+- Sedans dominate by body style; the **xDrive50e** variant outperforms its entire model line in revenue
+
+**Pricing & Discounting**
+- Overall average discount is **6.01%**
+- **i5** carries the highest average discount at the model level; **North America** at the regional level
+- **16.4%** of sales fall into the high-discount bucket
+- Discount depth shows a **weak relationship** with customer satisfaction — deeper discounts aren't clearly buying more loyalty (association, not causation)
+
+**Customer & Channel**
+- **28.71% repeat customer rate**, calculated at the true customer level (distinct `customer_key`), not per-transaction
+- Average delivery time is **~47 days**
+- **Dealership** is the leading sales channel; **Individual** buyers drive the largest revenue share
 
 ---
 
-## 11. Folder Structure
-```
+## 11. Data Quality Decisions
+
+**`segment` column dropped.** The field contained internally inconsistent values — an "EV" category that, on inspection, was mostly non-electric vehicles by fuel type (majority Petrol/Diesel/Hybrid, not BEV). Since EV describes a powertrain, not a market segment, this column couldn't be trusted for classification. `body_style` and `fuel_type` were used instead, and the decision was documented rather than silently correcting or dropping the anomaly.
+
+**`profit_proxy` dropped.** Without real manufacturing cost data, this derived margin figure was directional at best and risked being read as a real profitability number. Removed from the final dashboard rather than presented with a misleading label.
+
+**Repeat customer rate** is calculated using `DISTINCTCOUNT` on `customer_key`, filtered by `is_repeat_customer`, rather than counting flagged transaction rows — this avoids inflating the rate when a single loyal customer has multiple purchases.
+
+---
+
+## 12. Folder Structure
+
+```text
 BMW_Sales_Analysis/
-├── README.md               # Main project documentation
-├── powerbi_dashboard_plan.md # Power BI dashboard design blueprint
-├── .env                    # Local environment config (credentials)
-├── data_quality_report.md  # Data cleaning and validation summary
-├── eda_summary.md          # Key findings from Python EDA
-├── insights_summary.md     # Detailed business insights summary
+├── README.md
 ├── Dataset/
-│   ├── raw/                # Contains original transaction files
-│   └── clean/              # Contains the cleaned dataset (bmw_cleaned.csv)
+│   ├── raw/
+│   └── clean/
 ├── Notebooks/
-│   ├── 01_data_cleaning.ipynb # Jupyter notebook for Pandas data cleaning
-│   └── 02_eda.ipynb           # Jupyter notebook for Seaborn/Matplotlib analysis
+│   ├── 01_data_cleaning.ipynb
+│   └── 02_eda.ipynb
 ├── Scripts/
-│   └── load_to_postgres.py    # Python pipeline to build schema and load PostgreSQL
+│   └── load_to_postgres.py
 ├── sql/
 │   ├── revenue_analysis.sql
 │   ├── pricing_and_discount_analysis.sql
@@ -168,14 +216,20 @@ BMW_Sales_Analysis/
 │   ├── regional_performance_analysis.sql
 │   └── customer_sales_channel_analysis.sql
 ├── powerbi/
-│   └── (Pending .pbix file development)
+│   └── bmw_sales_intelligence.pbix
 └── images/
-    └── eda/                # Saved EDA visual files (.png)
+    └── dashboard/
+        ├── Executive_Overview.png
+        ├── Product_Performance.png
+        ├── Pricing_and_Discount_strategy.png
+        └── Customer_and_Channel_performance.png
 ```
 
 ---
 
-## 12. Future Improvements
-* **Automate ETL:** Transition the SQL load script into an Airflow DAG.
-* **Incorporate Cost Data:** Add vehicle manufacturing cost data to enable true net-profit analysis instead of using `profit_proxy`.
-* **Predictive Analytics:** Train a machine learning model to predict delivery delays based on country, logistics channel, and order date.
+## 13. Future Improvements
+
+- Automate the ETL step (e.g., Airflow DAG) instead of a manual load script
+- Add real manufacturing cost data to enable true profit/margin analysis
+- Predictive model for delivery delay risk based on region and channel
+- Extend customer analysis with cohort/RFM segmentation
