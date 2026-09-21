@@ -1,0 +1,199 @@
+BMW SALES ANALYSIS PROJECT - INTERVIEW SUMMARY
+
+1. PROJECT OVERVIEW
+We built an end-to-end BMW sales analytics project using Python, PostgreSQL, SQL, and Power BI. The project analyzes 10,000 BMW sales transactions from 2024-2025 and focuses on revenue performance, pricing strategy, regional growth, customer behavior, and product mix.
+
+The goal was not just to analyze data, but to answer business questions that leadership would actually ask:
+- Which regions, models, and channels are driving revenue?
+- Are discounts helping sales or hurting margin?
+- Which customer segments are most valuable?
+- Is the EV portfolio growing or losing share?
+- Are delivery times affecting customer satisfaction?
+
+2. BUSINESS PROBLEM WE SOLVED
+The real business problem was:
+BMW needed a clear view of sales performance across regions, models, pricing strategies, and customer segments so management could make better decisions on inventory planning, pricing, regional investment, and customer experience.
+
+This project helps answer:
+- Where is growth coming from?
+- Which markets deserve more investment?
+- Is price discounting effective or damaging profitability?
+- How do product mix and customer demand differ by segment?
+- What operational issues affect satisfaction and repeat purchases?
+
+3. DATASET
+We worked with a BMW sales dataset containing 10,000 transactions and around 30 variables.
+Key fields included:
+- Sale date, year, month, quarter
+- Model, variant, segment, fuel type, transmission
+- Region, country
+- MSRP, discount percent, discount amount, final sale price
+- Options cost
+- Delivery days
+- Customer satisfaction score
+- Sales channel, financing type, customer type
+- Repeat customer flag, trade-in flag
+
+4. TECH STACK USED
+- Python
+- Pandas, NumPy
+- Matplotlib, Seaborn
+- PostgreSQL
+- SQLAlchemy
+- Power BI (planned dashboard)
+- Git/GitHub
+
+5. DATA CLEANING AND VALIDATION
+We started by cleaning the raw data and validating it before analysis.
+Important steps performed:
+- Checked duplicate transaction IDs
+- Validated date consistency between sale_date, sale_year, sale_month, sale_quarter
+- Checked for invalid prices and discount values
+- Identified missing values and applied business rules rather than filling values blindly
+
+Important business decisions:
+- loan_term_months was kept as NULL for cash/subscription cases because a loan did not exist
+- customer_satisfaction_score was kept as NULL for non-respondents because missing survey data is not the same as a zero rating
+
+We also created a data quality report to document the process and findings.
+
+6. FEATURE ENGINEERING
+We engineered important features to support business analysis and dashboarding.
+Features created:
+- profit_proxy = final_sale_price_usd - msrp_usd + discount_amount_usd
+- discount_bucket = Low, Medium, High, Very High
+- year_month = formatted monthly grouping key
+- delivery_category = Fast, Normal, Delayed
+
+Why these matter:
+- They help in analyzing profitability, price elasticity, and delivery experience
+- They make the data easier to segment in SQL and Power BI
+
+7. ETL INTO POSTGRESQL
+After cleaning, we loaded the data into PostgreSQL using a star schema.
+We created a fact table and dimension tables:
+- FactSales
+- DimDate
+- DimModel
+- DimRegion
+- DimCustomer
+
+Why star schema:
+- Good for BI tools like Power BI
+- Easier querying and slicing by region, model, time, and customer type
+- Standard reporting design in analytics projects
+
+8. SQL ANALYSIS
+We wrote SQL queries to answer business questions from the star schema.
+Main analytical areas:
+- Revenue analysis
+- Pricing and discount analysis
+- Regional performance analysis
+- Product performance analysis
+- Customer and sales channel analysis
+
+We used:
+- Aggregations
+- CTEs
+- Window functions like LAG and RANK
+- Running totals and year-over-year analysis
+- Grouping by region, model, channel, and customer segment
+
+Important SQL topics covered:
+- Revenue by year and quarter
+- MoM and YoY revenue trends
+- Top performing models by revenue
+- Region-wise revenue contribution
+- Discount pattern by model and region
+- Repeat customer rate by channel
+- Satisfaction by financing type
+- Delivery performance vs satisfaction
+- Revenue by customer type
+
+9. EXPLORATORY DATA ANALYSIS (EDA)
+We performed Python-based EDA to understand business patterns visually.
+Key questions we answered:
+- Is revenue growing month over month?
+- Which region generates the most revenue?
+- Which models sell most and which generate most revenue?
+- What is the pricing spread by vehicle segment?
+- Which models and regions have deeper discounts?
+- Does discounting affect satisfaction?
+- Is the EV lineup growing in market share?
+- What is the repeat customer rate by region?
+- Does delivery speed influence customer satisfaction?
+- Are there strong correlations between pricing and customer experience variables?
+
+Key findings from EDA:
+- Monthly revenue was stable with moderate growth
+- North America and Europe were strong revenue contributors
+- Asia Pacific was the fastest-growing region
+- 3 Series led in units sold, but X5 led in revenue
+- Luxury segment had the highest median selling price
+- EV lineup share slightly declined versus petrol models
+- Fast delivery had a small positive effect on satisfaction
+- Repeat customer rate varied by region
+- Discounting showed weak relationship with satisfaction
+
+10. MAIN BUSINESS INSIGHTS
+Some of the strongest business insights were:
+- BMW sales were stable and healthy overall, with no major collapse in demand
+- Revenue was driven by a combination of volume and high-value models
+- The 3 Series was a volume driver while X5 generated more financial value
+- Regional market differences were important: some markets were high revenue, others high growth
+- Discounting was not strongly correlated with satisfaction, suggesting discounts may not always be the best lever
+- Delivery performance mattered for customer experience
+- EV adoption did not yet dominate the portfolio share, indicating room for growth and product strategy review
+
+11. POWER BI PLAN
+We also designed a Power BI dashboard blueprint.
+Planned pages:
+- Executive Overview
+- Product Performance
+- Pricing and Discount Strategy
+- Customer and Channel Performance
+
+Included ideas:
+- KPI cards
+- Trend charts
+- Region comparisons
+- Model rankings
+- Discount analysis visuals
+- Customer satisfaction and repeat customer views
+- Drillthrough pages for region and model analysis
+
+This shows we can move from raw data to business storytelling in BI tools.
+
+12. WHAT THIS PROJECT DEMONSTRATES
+This project shows we can do full analytics work end to end:
+- Understand the business problem
+- Clean and validate data
+- Engineer features
+- Design a star schema
+- Write SQL for business analysis
+- Build BI dashboard thinking
+- Communicate findings in business language
+
+This is exactly the kind of portfolio project employers look for in analytics and BI roles.
+
+13. HOW TO EXPLAIN THIS IN AN INTERVIEW
+Short version:
+"I built an end-to-end BMW sales analytics project to analyze sales performance, pricing strategy, regional growth, and customer behavior. I cleaned and validated the data in Python, engineered features, built a star schema in PostgreSQL, wrote SQL queries for business analysis, and designed a Power BI dashboard to present insights to leadership. The project focused on answering business questions around revenue trends, discount effectiveness, product mix, repeat customers, and delivery impact on satisfaction."
+
+If they ask for details, you can add:
+- I used a star schema because it is efficient for BI reporting
+- I did not impute missing satisfaction data because that would distort reality
+- I focused on business decisions like pricing, channel strategy, and regional investment
+- I used SQL window functions to answer deeper analytical questions
+
+14. STRONGEST INTERVIEW POINTS TO HIGHLIGHT
+- Full end-to-end analytics flow: data cleaning -> EDA -> ETL -> SQL -> BI
+- Business-focused thinking, not just technical execution
+- Data quality decisions and handling missing values correctly
+- Star schema design for analytical reporting
+- Use of SQL window functions and trend analysis
+- Strong understanding of what the business metrics mean
+- Ability to connect technical work to business decisions
+
+15. FINAL STATEMENT FOR INTERVIEW
+This project is a strong business intelligence portfolio project because it goes beyond basic analysis. It shows that I can work with messy data, clean and validate it, design a proper warehouse structure, answer business questions using SQL, and present insights in a dashboard-friendly way. It demonstrates both technical skills and business thinking, which is what hiring managers look for in data analyst roles.
