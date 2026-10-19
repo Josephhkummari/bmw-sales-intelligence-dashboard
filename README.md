@@ -123,8 +123,6 @@ erDiagram
 
 Analytical queries against the PostgreSQL star schema, grouped into five business themes: Revenue, Pricing & Discount, Regional Performance, Product Performance, and Customer & Sales Channel. Techniques used include window functions (regional contribution %, model ranking), CTEs with `LAG()` for MoM/YoY growth, and boolean casting for repeat-purchase rate calculations.
 
-*(Fill in your actual query count and file names here — keep this section only as detailed as what's actually in your `/sql` folder.)*
-
 ---
 
 ## 9. Power BI Dashboard
